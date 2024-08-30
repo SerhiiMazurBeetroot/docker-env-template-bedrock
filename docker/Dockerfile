@@ -109,13 +109,13 @@ RUN curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli
 	echo 'wp-cli.phar "$@" --allow-root' >> /usr/local/bin/wp && \
 	chmod +x /usr/local/bin/wp
 
-ADD run.sh /run.sh
-RUN chmod 755 /*.sh
-
-RUN rm -rf /var/www/html/
+# docker-env files
+ADD run.sh /docker-env/run.sh
+ADD .env /docker-env/.env
+RUN chmod 755 /docker-env
 
 WORKDIR /var/www/html
 
 RUN chown -R www-data:www-data /var/www/html
 
-CMD ["/run.sh"]
+CMD ["/docker-env/run.sh"]

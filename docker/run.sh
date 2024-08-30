@@ -1,33 +1,22 @@
 #!/bin/sh
 
-rm -rf /var/www/html/
-
-composer create-project roots/bedrock .
-
-if ! $(wp core is-installed); then
-    if [ -n "$SITE_TITLE" ] && [ -n "$WP_USER" ] && [ -n "$WP_PASSWORD" ] && [ -n "$WP_SITEURL" ]; then
-        echo "============================================="
-        echo "=> WordPress is alread configured.";
-        echo "============================================="
-
-        wp core install \
-            --title="Site ${SITE_TITLE}" \
-            --admin_user="${WP_USER}" \
-            --admin_password="${WP_PASSWORD}" \
-            --admin_email="admin@example.com" \
-            --url="${WP_SITEURL}" \
-            --skip-email \
-            --allow-root
-    fi
-else
+# Check if the /var/www/html/ directory is empty
+if [ -z "$(ls -A '/var/www/html/')" ]; then
+    echo ""
     echo "============================================="
-    echo "=> WordPress is alread configured.";
+    echo "=> Setting up Bedrock project"
     echo "============================================="
+
+    # Clean up any existing files in /var/www/html/
+    rm -rf /var/www/html/*
+
+    # Create a new Bedrock project
+    composer create-project roots/bedrock .
+
+    # Copy environment configuration
+    cp /docker-env/.env /var/www/html/web/.env
 fi
 
-# Remove plugins and themes
-wp plugin delete hello akismet --allow-root
-wp theme delete twentynineteen twentytwenty twentytwentyone --allow-root
-
-echo "=> Apache started..."
+# Start Apache in the foreground
+echo "=> Starting Apache..."
 /usr/sbin/apache2ctl -D FOREGROUND
